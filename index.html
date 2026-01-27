@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบตรวจเช็คความสุข - ม.2/1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --primary-color: #1a5f7a; /* สีกรมท่าโรงเรียน */
+            --secondary-color: #ffca28; /* สีเหลืองทอง */
+            --bg-color: #e3f2fd;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#aecbd6 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            border: 4px solid var(--primary-color);
+        }
+
+        .logo-section {
+            margin-bottom: 15px;
+        }
+
+        .logo-section img {
+            height: 120px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+            transition: transform 0.3s;
+        }
+        
+        .logo-section img:hover {
+            transform: scale(1.05);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 10px 0 5px 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        h2 {
+            color: #555;
+            margin: 0 0 20px 0;
+            font-size: 1.2rem;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .camera-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            min-height: 300px; /* กันพื้นที่หาย */
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .status-bar {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f1f8e9;
+            border-radius: 10px;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #777;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        /* Loading Overlay */
+        #loader {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.9);
+            z-index: 99;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 16px;
+        }
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="logo-section">
+            <img src="https://img2.pic.in.th/logo-253x300-1.png" alt="ตราโรงเรียนปราจิณราษฎรอำรุง">
+        </div>
+
+        <h1>ระบบตรวจเช็คความสุขประจำวัน</h1>
+        <h2>นักเรียนชั้น ม.2/1 โรงเรียนปราจิณราษฎรอำรุง</h2>
+
+        <div class="camera-wrapper">
+            <div id="loader">
+                <div class="spinner"></div>
+                <p>กำลังโหลดสมอง AI... กรุณารอสักครู่</p>
+            </div>
+            <video id="video" autoplay muted playsinline></video>
+            <canvas id="overlay"></canvas>
+        </div>
+
+        <div class="status-bar" id="status-text">
+            กำลังเตรียมความพร้อม... 😐
+        </div>
+
+        <div class="footer">
+            Create By <strong>BiGgy Teacher</strong> @2026 ❤️ <br>
+            พัฒนาเพื่อการเรียนรู้และสร้างรอยยิ้ม
+        </div>
+    </div>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <script>
+        // ตัวแปรควบคุม
+        let isModelLoaded = false;
+        let lastHappyTime = 0;
+        
+        // รอให้โหลด Face-api เสร็จก่อน
+        window.onload = function() {
+            if (typeof faceapi === 'undefined') {
+                alert("ไม่สามารถโหลดไลบรารี AI ได้ กรุณาตรวจสอบอินเทอร์เน็ต");
+                return;
+            }
+            loadModels();
+        };
+
+        const video = document.getElementById('video');
+        const loader = document.getElementById('loader');
+        const statusText = document.getElementById('status-text');
+
+        // 1. โหลด Model AI
+        async function loadModels() {
+            try {
+                // หมายเหตุ: คุณต้องสร้างโฟลเดอร์ models และใส่ไฟล์โมเดลไว้ที่นั่น
+                // หรือเปลี่ยน path นี้ไปยัง URL ที่โฮสต์โมเดลไว้
+                const MODEL_URL = './models'; 
+
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+                ]);
+
+                isModelLoaded = true;
+                loader.style.display = 'none';
+                startVideo();
+            } catch (err) {
+                console.error(err);
+                loader.innerHTML = `<p style="color:red">ไม่พบไฟล์ Model! <br>กรุณาเช็คโฟลเดอร์ /models</p>`;
+            }
+        }
+
+        // 2. เปิดกล้อง
+        function startVideo() {
+            navigator.mediaDevices.getUserMedia({ video: {} })
+                .then(stream => {
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error("Camera Error:", err);
+                    alert("ไม่สามารถเข้าถึงกล้องได้ กรุณาอนุญาตการใช้กล้อง");
+                });
+        }
+
+        // 3. แปลงชื่ออารมณ์เป็นภาษาไทย
+        function translateEmotion(emotion) {
+            const dictionary = {
+                neutral: "😐 ปกติ/เฉยๆ",
+                happy: "😁 มีความสุข/ร่าเริง",
+                sad: "😢 เศร้า/เสียใจ",
+                angry: "😠 โกรธ/หงุดหงิด",
+                fearful: "😨 กลัว/กังวล",
+                disgusted: "🤢 รังเกียจ",
+                surprised: "😲 ตกใจ/ประหลาดใจ"
+            };
+            return dictionary[emotion] || emotion;
+        }
+
+        // 4. ระบบตรวจจับ Real-time
+        video.addEventListener('play', () => {
+            const canvas = document.getElementById('overlay');
+            const displaySize = { width: video.clientWidth, height: video.clientHeight };
+            
+            // ปรับขนาด canvas ให้เท่า video
+            faceapi.matchDimensions(canvas, displaySize);
+
+            setInterval(async () => {
+                if (!isModelLoaded) return;
+
+                // ตรวจจับใบหน้าและอารมณ์
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks()
+                    .withFaceExpressions();
+
+                const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                
+                // เคลียร์ Canvas ก่อนวาดใหม่
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // วาดกรอบและวาดอารมณ์ (แบบ Default ของ Lib)
+                // faceapi.draw.drawDetections(canvas, resizedDetections); 
+                // เราจะวาดเองเพื่อให้สวยงามและเป็นภาษาไทย
+
+                if (resizedDetections.length > 0) {
+                    resizedDetections.forEach(detection => {
+                        const box = detection.detection.box;
+                        const expressions = detection.expressions;
+                        
+                        // หาอารมณ์ที่เด่นชัดที่สุด
+                        const sorted = Object.keys(expressions).sort((a, b) => expressions[b] - expressions[a]);
+                        const mainEmotion = sorted[0];
+                        const score = expressions[mainEmotion];
+
+                        // วาดกรอบหน้า
+                        ctx.strokeStyle = '#ffca28';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+                        // เขียนข้อความภาษาไทย
+                        ctx.font = 'bold 20px Kanit';
+                        ctx.fillStyle = '#1a5f7a';
+                        ctx.fillText(`${translateEmotion(mainEmotion)} (${Math.round(score*100)}%)`, box.x, box.y - 10);
+
+                        // อัปเดต Status Bar ด้านล่าง
+                        statusText.innerText = `สถานะ: กำลังตรวจจับ... พบอารมณ์ ${translateEmotion(mainEmotion)}`;
+
+                        // --- ฟีเจอร์พิเศษ: ตรวจจับความสุข ---
+                        if (mainEmotion === 'happy' && score > 0.8) {
+                            checkHappyTrigger();
+                        }
+                    });
+                } else {
+                    statusText.innerText = "กำลังค้นหาใบหน้า... 🧐";
+                }
+            }, 100);
+        });
+
+        // ฟังก์ชัน Trigger เมื่อมีความสุข (ใส่ Debounce ไม่ให้เด้งรัว)
+        function checkHappyTrigger() {
+            const now = Date.now();
+            if (now - lastHappyTime > 5000) { // ต้องห่างกัน 5 วินาที
+                lastHappyTime = now;
+                fireConfetti();
+            }
+        }
+
+        function fireConfetti() {
+            Swal.fire({
+                title: 'ยอดเยี่ยมมาก! 🌟',
+                text: 'รอยยิ้มของหนู ทำให้ห้องเรียนสดใส!',
+                imageUrl: 'https://media.giphy.com/media/l0HlQ7LRalQqdWfao/giphy.gif',
+                imageWidth: 200,
+                imageHeight: 200,
+                backdrop: `
+                    rgba(0,0,123,0.4)
+                    url("https://sweetalert2.github.io/images/nyan-cat.gif")
+                    left top
+                    no-repeat
+                `,
+                confirmButtonText: 'ยิ้มสู้ต่อไป!',
+                timer: 3000
+            });
+        }
+
+    </script>
+</body>
+</html>
