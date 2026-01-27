@@ -144,6 +144,7 @@
 
         <h1>ระบบตรวจเช็คความสุขประจำวัน</h1>
         <h2>นักเรียนชั้น ม.2/1 โรงเรียนปราจิณราษฎรอำรุง</h2>
+        <h2>โดย ครูสรวิศิษฐ์  ศิริวรโสภณ</h2>
 
         <div class="camera-wrapper">
             <div id="loader">
@@ -159,7 +160,7 @@
         </div>
 
         <div class="footer">
-            Create By <strong>BiGgy Teacher</strong> @2026 ❤️ <br>
+            ❤️Create By <strong>❤️BiGgy Teacher❤️ </strong> @2026 ❤️ <br>
             พัฒนาเพื่อการเรียนรู้และสร้างรอยยิ้ม
         </div>
     </div>
@@ -297,7 +298,7 @@
         // ฟังก์ชัน Trigger เมื่อมีความสุข (ใส่ Debounce ไม่ให้เด้งรัว)
         function checkHappyTrigger() {
             const now = Date.now();
-            if (now - lastHappyTime > 5000) { // ต้องห่างกัน 5 วินาที
+            if (now - lastHappyTime > 10000) { // ต้องห่างกัน 5 วินาที
                 lastHappyTime = now;
                 fireConfetti();
             }
@@ -325,3 +326,4 @@
 </body>
 
 </html>
+
