@@ -189,7 +189,8 @@
             try {
                 // หมายเหตุ: คุณต้องสร้างโฟลเดอร์ models และใส่ไฟล์โมเดลไว้ที่นั่น
                 // หรือเปลี่ยน path นี้ไปยัง URL ที่โฮสต์โมเดลไว้
-                const MODEL_URL = './models'; 
+                // เปลี่ยนไปดึงไฟล์จาก Online โดยตรง
+                const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
 
                 await Promise.all([
                     faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
@@ -322,4 +323,5 @@
 
     </script>
 </body>
+
 </html>
