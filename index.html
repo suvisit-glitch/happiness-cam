@@ -3,329 +3,387 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบ Ai ตรวจเช็คความสุขของนักเรียน โรงเรียนปราจิณราษฎรอำรุง</title>
+    <title>ระบบเช็คความสุข & ทดสอบจิตวิทยา - ม.2/1</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
         :root {
-            --primary-color: #1a5f7a; /* สีกรมท่าโรงเรียน */
-            --secondary-color: #ffca28; /* สีเหลืองทอง */
-            --bg-color: #e3f2fd;
+            /* Palette: Blue & White with Yellow Accent */
+            --school-blue: #003366;    /* น้ำเงินเข้มโรงเรียน */
+            --school-light-blue: #e8f0fe; /* ฟ้าอ่อนพื้นหลัง */
+            --school-white: #ffffff;
+            --accent-yellow: #ffcc00;  /* เหลืองทอง */
+            --text-dark: #2c3e50;
         }
 
         body {
             margin: 0;
             padding: 0;
             font-family: 'Kanit', sans-serif;
-            background-color: var(--bg-color);
-            background-image: radial-gradient(#aecbd6 1px, transparent 1px);
-            background-size: 20px 20px;
+            background-color: var(--school-light-blue);
+            color: var(--text-dark);
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-        }
-
-        .main-container {
-            background: white;
-            width: 90%;
-            max-width: 800px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            padding: 20px;
-            text-align: center;
             position: relative;
-            border: 4px solid var(--primary-color);
         }
 
-        .logo-section {
-            margin-bottom: 15px;
-        }
-
-        .logo-section img {
-            height: 120px;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
-            transition: transform 0.3s;
+        /* --- Animated Background (Floating Emojis) --- */
+        .bg-animation-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1; /* อยู่หลังสุด */
+            overflow: hidden;
+            pointer-events: none;
         }
         
-        .logo-section img:hover {
-            transform: scale(1.05);
+        .floating-emoji {
+            position: absolute;
+            bottom: -50px;
+            font-size: 2rem;
+            opacity: 0.3; /* จางๆ ไม่กวนสายตา */
+            animation: floatUp linear infinite;
         }
 
-        h1 {
-            color: var(--primary-color);
-            margin: 10px 0 5px 0;
-            font-size: 1.8rem;
-            font-weight: 700;
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.4; }
+            90% { opacity: 0.4; }
+            100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
         }
 
-        h2 {
-            color: #555;
-            margin: 0 0 20px 0;
-            font-size: 1.2rem;
-            font-family: 'Sarabun', sans-serif;
-        }
-
-        .camera-wrapper {
+        /* --- Header --- */
+        .header-bar {
+            width: 100%;
+            background: var(--school-blue);
+            color: var(--school-white);
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
             position: relative;
-            width: 100%;
-            max-width: 640px;
-            margin: 0 auto;
-            border-radius: 15px;
-            overflow: hidden;
+            z-index: 10;
+        }
+        .header-bar img { height: 60px; vertical-align: middle; margin-right: 10px; }
+        .header-title { display: inline-block; vertical-align: middle; text-align: left; }
+        .header-title h1 { margin: 0; font-size: 1.2rem; }
+        .header-title span { font-size: 0.8rem; opacity: 0.9; font-family: 'Sarabun'; }
+
+        /* --- Dashboard (Camera + Result) --- */
+        .dashboard {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 30px;
+            width: 95%;
+            max-width: 900px;
+            flex-wrap: wrap;
+            z-index: 5;
+        }
+
+        .camera-box {
+            position: relative;
+            width: 320px; height: 240px;
             background: #000;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            min-height: 300px; /* กันพื้นที่หาย */
+            border: 4px solid var(--school-white);
+            outline: 2px solid var(--school-blue); /* ขอบซ้อน 2 ชั้น */
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,51,102,0.3);
         }
 
-        video {
-            width: 100%;
-            height: auto;
-            display: block;
+        video, canvas {
+            width: 100%; height: 100%; object-fit: cover;
+            transform: scaleX(-1);
         }
 
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .status-bar {
-            margin-top: 15px;
-            padding: 10px;
-            background: #f1f8e9;
-            border-radius: 10px;
-            color: #2e7d32;
-            font-weight: bold;
-        }
-
-        .footer {
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #777;
-            border-top: 1px solid #eee;
-            padding-top: 10px;
-        }
-
-        /* Loading Overlay */
-        #loader {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.9);
-            z-index: 99;
+        .result-card {
+            background: var(--school-white);
+            width: 180px; height: 210px; /* ปรับความสูง */
+            border-radius: 12px;
+            border-top: 6px solid var(--accent-yellow);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            border-radius: 16px;
+            text-align: center;
+            padding: 15px;
         }
-        .spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        .emoji-big { font-size: 3.5rem; margin-bottom: 5px; animation: bounce 2s infinite; }
+        .text-status { font-size: 1.2rem; font-weight: bold; color: var(--school-blue); }
+        .bar-container {
+            width: 100%; height: 8px; background: #ddd;
+            border-radius: 4px; margin-top: 10px; overflow: hidden;
+        }
+        .bar-fill { height: 100%; background: var(--school-blue); width: 0%; transition: width 0.3s; }
+        
+        .badge-live {
+            background: #ff4444; color: white;
+            font-size: 0.6rem; padding: 2px 6px; border-radius: 4px;
+            margin-bottom: 5px; letter-spacing: 1px;
+        }
+
+        /* --- Quiz Section --- */
+        .quiz-card {
+            background: var(--school-white);
+            width: 90%; max-width: 600px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-left: 8px solid var(--school-blue);
+            position: relative;
+            z-index: 5;
+            margin-bottom: 50px;
+        }
+
+        .question-title {
+            font-size: 1.2rem; color: var(--school-blue);
+            margin-bottom: 20px; font-weight: 600;
+        }
+
+        .choice-item {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 15px; border-radius: 10px;
+            margin-bottom: 12px; cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Sarabun'; font-size: 1rem;
+        }
+
+        .choice-item:hover {
+            border-color: var(--school-blue);
+            background: var(--school-light-blue);
+            transform: translateX(5px);
+        }
+
+        /* Animations */
+        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        
+        /* Mobile */
+        @media (max-width: 600px) {
+            .dashboard { justify-content: center; }
+            .result-card { 
+                width: 90%; height: auto; flex-direction: row; 
+                justify-content: space-between; padding: 10px 20px;
+                border-top: none; border-left: 6px solid var(--accent-yellow);
+            }
+            .emoji-big { font-size: 2rem; margin: 0; }
+            .text-status { font-size: 1rem; }
+            .badge-live { display: none; }
+            .bar-container { width: 50px; }
+        }
+
+        .cam-loader {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,51,102,0.9); color: white;
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column; font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
 
-    <div class="main-container">
-        <div class="logo-section">
-            <img src="https://img2.pic.in.th/logo-253x300-1.png" alt="ตราโรงเรียนปราจิณราษฎรอำรุง">
+    <div class="bg-animation-container" id="bg-anim">
         </div>
 
-        <h1>❤️ระบบ Ai ตรวจเช็คความสุขประจำวันของนักเรียน❤️</h1>
-        <h2>โรงเรียนปราจิณราษฎรอำรุง</h2>
-        <h2>โดย ครูสรวิศิษฐ์  ศิริวรโสภณ</h2>
+    <div class="header-bar">
+        <div style="display: inline-block;">
+            <img src="https://img2.pic.in.th/logo-253x300-1.png" alt="Logo">
+            <div class="header-title">
+                <h1>😁ระบบ ai เช็คความสุข & แบบทดสอบก่อนเรียน💻</h1>
+                <span>ของนักเรียนโรงเรียนปราจิณราษฎรอำรุง</span>
+            </div>
+        </div>
+    </div>
 
-        <div class="camera-wrapper">
-            <div id="loader">
-                <div class="spinner"></div>
-                <p>กำลังโหลดสมอง AI... กรุณารอสักครู่</p>
+    <div class="dashboard">
+        <div class="camera-box">
+            <div id="cam-loader" class="cam-loader">
+                <div style="font-size:2rem; margin-bottom:10px;">🧠</div>
+                <span>กำลังเชื่อมต่อสมอง AI...</span>
             </div>
             <video id="video" autoplay muted playsinline></video>
             <canvas id="overlay"></canvas>
         </div>
 
-        <div class="status-bar" id="status-text">
-            กำลังเตรียมความพร้อม... 😐
+        <div class="result-card">
+            <div class="badge-live">LIVE</div>
+            <div class="emoji-big" id="emoji-display">😐</div>
+            <div class="text-status" id="emotion-text">รอการตรวจจับ</div>
+            <div class="bar-container">
+                <div class="bar-fill" id="conf-level"></div>
+            </div>
+            <div style="font-size:0.7rem; color:#888; margin-top:5px;">AI Confidence</div>
         </div>
+    </div>
 
-        <div class="footer">
-            ❤️Create By <strong>❤️BiGgy Teacher❤️ </strong> @2026 ❤️ <br>
-            พัฒนาเพื่อการเรียนรู้และสร้างรอยยิ้มในห้องเรียน
+    <div class="quiz-card" id="quiz-area">
+        <div style="text-align:center; color:#777; font-size:0.9rem; margin-bottom:10px;">
+            แบบทดสอบก่อนเรียน (Pre-test Analysis)
         </div>
+        <div id="questions-wrapper"></div>
+    </div>
+
+    <div class="quiz-card" id="final-result" style="display:none; text-align:center;">
+        <div style="font-size: 5rem; margin-bottom:10px;">🎓</div>
+        <h2 id="final-title" style="color:var(--school-blue);"></h2>
+        <p id="final-desc" style="font-family:'Sarabun'; color:#555; line-height:1.6;"></p>
+        <button onclick="location.reload()" class="choice-item" style="background:var(--accent-yellow); border:none; text-align:center; width:100%; font-weight:bold; color:#000;">
+            เริ่มทำใหม่
+        </button>
     </div>
 
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
     <script>
-        // ตัวแปรควบคุม
-        let isModelLoaded = false;
-        let lastHappyTime = 0;
-        
-        // รอให้โหลด Face-api เสร็จก่อน
-        window.onload = function() {
-            if (typeof faceapi === 'undefined') {
-                alert("ไม่สามารถโหลดไลบรารี AI ได้ กรุณาตรวจสอบอินเทอร์เน็ต");
-                return;
+        // --- 1. Background Animation Script ---
+        function createFloatingEmojis() {
+            const container = document.getElementById('bg-anim');
+            const emojis = ['✏️', '📚', '💻', '📐', '🖥️', '🎒', '🧠'];
+            const count = 15; // จำนวนไอคอนที่จะลอย
+
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.classList.add('floating-emoji');
+                el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                // Random Position & Speed
+                el.style.left = Math.random() * 100 + '%';
+                el.style.animationDuration = (Math.random() * 10 + 10) + 's'; // 10-20 วินาที
+                el.style.animationDelay = (Math.random() * 10) + 's';
+                el.style.fontSize = (Math.random() * 2 + 1) + 'rem'; // ขนาดไม่เท่ากัน
+
+                container.appendChild(el);
             }
-            loadModels();
+        }
+
+        // --- 2. Quiz Logic ---
+        const quizData = [
+            { q: "1. ถ้าได้เลโก้ถังใหญ่มา คุณจะทำไง?", a: "ต่อเลย! มั่วๆ ไปเดี๋ยวก็สวย (Improviser)", b: "แยกสี แยกขนาดก่อน ค่อยต่อ (Planner)" },
+            { q: "2. เจอเกมด่านยากๆ ทำยังไง?", a: "พักก่อน ค่อยมาเล่นใหม่ (Reflector)", b: "เล่นซ้ำๆ จนกว่าจะชนะ (Determined)" },
+            { q: "3. ชอบวาดรูป หรือ เล่นหมากรุก?", a: "วาดรูป (Creative)", b: "หมากรุก (Logic)" },
+            { q: "4. โต๊ะทำงานของคุณเป็นแบบไหน?", a: "รกแบบมีศิลปะ (Chaotic Good)", b: "เป็นระเบียบเป๊ะ (Lawful Good)" },
+            { q: "5. บอกทางเพื่อนยังไง?", a: "จุดสังเกตใหญ่ๆ (Overview)", b: "ระยะทางเป๊ะๆ (Detail)" }
+        ];
+        let scoreA = 0, scoreB = 0;
+
+        window.onload = function() {
+            createFloatingEmojis(); // เริ่ม Animation พื้นหลัง
+            renderQuiz();
+            startAI();
         };
 
-        const video = document.getElementById('video');
-        const loader = document.getElementById('loader');
-        const statusText = document.getElementById('status-text');
-
-        // 1. โหลด Model AI
-        async function loadModels() {
-            try {
-                // หมายเหตุ: คุณต้องสร้างโฟลเดอร์ models และใส่ไฟล์โมเดลไว้ที่นั่น
-                // หรือเปลี่ยน path นี้ไปยัง URL ที่โฮสต์โมเดลไว้
-                // เปลี่ยนไปดึงไฟล์จาก Online โดยตรง
-                const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
-
-                await Promise.all([
-                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
-                ]);
-
-                isModelLoaded = true;
-                loader.style.display = 'none';
-                startVideo();
-            } catch (err) {
-                console.error(err);
-                loader.innerHTML = `<p style="color:red">ไม่พบไฟล์ Model! <br>กรุณาเช็คโฟลเดอร์ /models</p>`;
-            }
-        }
-
-        // 2. เปิดกล้อง
-        function startVideo() {
-            navigator.mediaDevices.getUserMedia({ video: {} })
-                .then(stream => {
-                    video.srcObject = stream;
-                })
-                .catch(err => {
-                    console.error("Camera Error:", err);
-                    alert("ไม่สามารถเข้าถึงกล้องได้ กรุณาอนุญาตการใช้กล้อง");
-                });
-        }
-
-        // 3. แปลงชื่ออารมณ์เป็นภาษาไทย
-        function translateEmotion(emotion) {
-            const dictionary = {
-                neutral: "😐 ปกติ/เฉยๆ",
-                happy: "😁 มีความสุข/ร่าเริง",
-                sad: "😢 เศร้า/เสียใจ",
-                angry: "😠 โกรธ/หงุดหงิด",
-                fearful: "😨 กลัว/กังวล",
-                disgusted: "🤢 รังเกียจ",
-                surprised: "😲 ตกใจ/ประหลาดใจ"
-            };
-            return dictionary[emotion] || emotion;
-        }
-
-        // 4. ระบบตรวจจับ Real-time
-        video.addEventListener('play', () => {
-            const canvas = document.getElementById('overlay');
-            const displaySize = { width: video.clientWidth, height: video.clientHeight };
-            
-            // ปรับขนาด canvas ให้เท่า video
-            faceapi.matchDimensions(canvas, displaySize);
-
-            setInterval(async () => {
-                if (!isModelLoaded) return;
-
-                // ตรวจจับใบหน้าและอารมณ์
-                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-                    .withFaceLandmarks()
-                    .withFaceExpressions();
-
-                const resizedDetections = faceapi.resizeResults(detections, displaySize);
-                
-                // เคลียร์ Canvas ก่อนวาดใหม่
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // วาดกรอบและวาดอารมณ์ (แบบ Default ของ Lib)
-                // faceapi.draw.drawDetections(canvas, resizedDetections); 
-                // เราจะวาดเองเพื่อให้สวยงามและเป็นภาษาไทย
-
-                if (resizedDetections.length > 0) {
-                    resizedDetections.forEach(detection => {
-                        const box = detection.detection.box;
-                        const expressions = detection.expressions;
-                        
-                        // หาอารมณ์ที่เด่นชัดที่สุด
-                        const sorted = Object.keys(expressions).sort((a, b) => expressions[b] - expressions[a]);
-                        const mainEmotion = sorted[0];
-                        const score = expressions[mainEmotion];
-
-                        // วาดกรอบหน้า
-                        ctx.strokeStyle = '#ffca28';
-                        ctx.lineWidth = 3;
-                        ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-                        // เขียนข้อความภาษาไทย
-                        ctx.font = 'bold 20px Kanit';
-                        ctx.fillStyle = '#1a5f7a';
-                        ctx.fillText(`${translateEmotion(mainEmotion)} (${Math.round(score*100)}%)`, box.x, box.y - 10);
-
-                        // อัปเดต Status Bar ด้านล่าง
-                        statusText.innerText = `สถานะ: กำลังตรวจจับ... พบอารมณ์ ${translateEmotion(mainEmotion)}`;
-
-                        // --- ฟีเจอร์พิเศษ: ตรวจจับความสุข ---
-                        if (mainEmotion === 'happy' && score > 0.8) {
-                            checkHappyTrigger();
-                        }
-                    });
-                } else {
-                    statusText.innerText = "กำลังค้นหาใบหน้า... 🧐";
-                }
-            }, 100);
-        });
-
-        // ฟังก์ชัน Trigger เมื่อมีความสุข (ใส่ Debounce ไม่ให้เด้งรัว)
-        function checkHappyTrigger() {
-            const now = Date.now();
-            if (now - lastHappyTime > 10000) { // ต้องห่างกัน 5 วินาที
-                lastHappyTime = now;
-                fireConfetti();
-            }
-        }
-
-        function fireConfetti() {
-            Swal.fire({
-                title: 'ยอดเยี่ยมมาก! 🌟',
-                text: 'รอยยิ้มของหนู ทำให้ห้องเรียนสดใสขึ้นะ!',
-                imageUrl: 'https://media.giphy.com/media/l0HlQ7LRalQqdWfao/giphy.gif',
-                imageWidth: 200,
-                imageHeight: 200,
-                backdrop: `
-                    rgba(0,0,123,0.4)
-                    url("https://sweetalert2.github.io/images/nyan-cat.gif")
-                    left top
-                    no-repeat
-                `,
-                confirmButtonText: 'ยิ้มสู้ต่อไป ครูบิ๊กกี้เป็นกำลังใจให้!',
-                timer: 5000
+        function renderQuiz() {
+            const wrapper = document.getElementById('questions-wrapper');
+            quizData.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.style.display = index === 0 ? 'block' : 'none';
+                div.id = `q-${index}`;
+                div.className = 'fade-in';
+                div.innerHTML = `
+                    <div class="question-title">${item.q}</div>
+                    <div class="choice-item" onclick="nextQ('a', ${index})">ก. ${item.a}</div>
+                    <div class="choice-item" onclick="nextQ('b', ${index})">ข. ${item.b}</div>
+                    <div style="text-align:right; font-size:0.8rem; color:#aaa; margin-top:15px;">
+                        ข้อ ${index+1} จาก ${quizData.length}
+                    </div>
+                `;
+                wrapper.appendChild(div);
             });
         }
 
+        function nextQ(ans, idx) {
+            if(ans === 'a') scoreA++; else scoreB++;
+            document.getElementById(`q-${idx}`).style.display = 'none';
+            if (idx + 1 < quizData.length) {
+                const nextDiv = document.getElementById(`q-${idx+1}`);
+                nextDiv.style.display = 'block';
+                // Animation เล็กน้อย
+                nextDiv.animate([{opacity:0, transform:'translateY(20px)'}, {opacity:1, transform:'translateY(0)'}], {duration:400});
+            } else {
+                showFinalResult();
+            }
+        }
+
+        function showFinalResult() {
+            document.getElementById('quiz-area').style.display = 'none';
+            document.getElementById('final-result').style.display = 'block';
+            
+            const title = document.getElementById('final-title');
+            const desc = document.getElementById('final-desc');
+
+            if (scoreA > scoreB) {
+                title.innerText = "Creative Coder (นักสร้างสรรค์)";
+                desc.innerHTML = "คุณมีจินตนาการสูงเหมือนศิลปิน! 🎨<br>เหมาะกับงาน Front-End, UX/UI Design <br>และสร้างนวัตกรรมใหม่ๆ";
+            } else if (scoreB > scoreA) {
+                title.innerText = "Logical Thinker (นักตรรกะ)";
+                desc.innerHTML = "คุณมีความคิดเป็นระบบเหมือนวิศวกร! ⚙️<br>เหมาะกับงาน Back-End, Database <br>และการแก้ปัญหาซับซ้อน";
+            } else {
+                title.innerText = "Hybrid Developer (นักพัฒนาสมดุล)";
+                desc.innerHTML = "คุณเก่งทั้งบู๊และบุ๋น! ⚖️<br>ปรับตัวได้ทุกสถานการณ์ เข้าใจทั้งระบบและผู้คน";
+            }
+        }
+
+        // --- 3. AI Logic ---
+        async function startAI() {
+            const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+            try {
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+                ]);
+                document.getElementById('cam-loader').style.display = 'none';
+                
+                const video = document.getElementById('video');
+                navigator.mediaDevices.getUserMedia({ video: {} }).then(stream => { video.srcObject = stream; });
+
+                video.addEventListener('play', () => {
+                    const canvas = document.getElementById('overlay');
+                    const displaySize = { width: video.clientWidth, height: video.clientHeight };
+                    faceapi.matchDimensions(canvas, displaySize);
+
+                    setInterval(async () => {
+                        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+                        const ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                        if (detections.length > 0) {
+                            const ex = detections[0].expressions;
+                            const sorted = Object.keys(ex).sort((a, b) => ex[b] - ex[a]);
+                            updateDashboard(sorted[0], ex[sorted[0]]);
+                        }
+                    }, 200);
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        function updateDashboard(emotion, score) {
+            const ui = {
+                neutral: {t:"ปกติ", i:"😐", c:"#003366"},
+                happy: {t:"แฮปปี้", i:"😁", c:"#4caf50"},
+                sad: {t:"เศร้า", i:"😢", c:"#2196f3"},
+                angry: {t:"โกรธ", i:"😠", c:"#f44336"},
+                fearful: {t:"กลัว", i:"😨", c:"#9c27b0"},
+                disgusted: {t:"ยี้...", i:"🤢", c:"#795548"},
+                surprised: {t:"ว้าว!", i:"😲", c:"#ff9800"}
+            };
+            const d = ui[emotion] || ui.neutral;
+            
+            document.getElementById('emoji-display').innerText = d.i;
+            document.getElementById('emotion-text').innerText = d.t;
+            document.getElementById('emotion-text').style.color = d.c;
+            
+            const bar = document.getElementById('conf-level');
+            bar.style.width = Math.round(score*100) + '%';
+            bar.style.backgroundColor = d.c;
+        }
     </script>
 </body>
-
 </html>
-
-
-
