@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบเช็คความสุข & ทดสอบจิตวิทยา - ม.2/1</title>
+    <title>ระบบ AI เช็คความสุข - ครูบิ๊กกี้</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
         :root {
-            /* Palette: Blue & White with Yellow Accent */
-            --school-blue: #003366;    /* น้ำเงินเข้มโรงเรียน */
-            --school-light-blue: #e8f0fe; /* ฟ้าอ่อนพื้นหลัง */
+            /* ธีมโรงเรียนปราจิณราษฎรอำรุง (น้ำเงิน-ขาว-เหลือง) */
+            --school-blue: #003366;    
+            --school-light-blue: #e8f0fe; 
             --school-white: #ffffff;
-            --accent-yellow: #ffcc00;  /* เหลืองทอง */
+            --accent-yellow: #ffcc00;  
             --text-dark: #2c3e50;
         }
 
@@ -31,12 +31,12 @@
             position: relative;
         }
 
-        /* --- Animated Background (Floating Emojis) --- */
+        /* --- Animated Background --- */
         .bg-animation-container {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: -1; /* อยู่หลังสุด */
+            z-index: -1;
             overflow: hidden;
             pointer-events: none;
         }
@@ -45,7 +45,7 @@
             position: absolute;
             bottom: -50px;
             font-size: 2rem;
-            opacity: 0.3; /* จางๆ ไม่กวนสายตา */
+            opacity: 0.3;
             animation: floatUp linear infinite;
         }
 
@@ -56,24 +56,54 @@
             100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
         }
 
-        /* --- Header --- */
+        /* --- Header Section (ปรับปรุงใหม่) --- */
         .header-bar {
             width: 100%;
-            background: var(--school-blue);
+            background: linear-gradient(135deg, var(--school-blue), #004080);
             color: var(--school-white);
-            padding: 15px 0;
+            padding: 20px 0;
             text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 25px;
+            border-bottom: 5px solid var(--accent-yellow);
             position: relative;
             z-index: 10;
         }
-        .header-bar img { height: 60px; vertical-align: middle; margin-right: 10px; }
-        .header-title { display: inline-block; vertical-align: middle; text-align: left; }
-        .header-title h1 { margin: 0; font-size: 1.2rem; }
-        .header-title span { font-size: 0.8rem; opacity: 0.9; font-family: 'Sarabun'; }
 
-        /* --- Dashboard (Camera + Result) --- */
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            line-height: 1.4;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .sub-header {
+            font-family: 'Sarabun', sans-serif;
+            font-size: 1rem;
+            margin-top: 5px;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .teacher-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--accent-yellow);
+            border: 1px solid rgba(255,204,0,0.3);
+        }
+
+        /* --- Dashboard --- */
         .dashboard {
             display: flex;
             justify-content: center;
@@ -91,7 +121,7 @@
             width: 320px; height: 240px;
             background: #000;
             border: 4px solid var(--school-white);
-            outline: 2px solid var(--school-blue); /* ขอบซ้อน 2 ชั้น */
+            outline: 2px solid var(--school-blue);
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,51,102,0.3);
@@ -104,7 +134,7 @@
 
         .result-card {
             background: var(--school-white);
-            width: 180px; height: 210px; /* ปรับความสูง */
+            width: 180px; height: 210px;
             border-radius: 12px;
             border-top: 6px solid var(--accent-yellow);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
@@ -123,7 +153,6 @@
             border-radius: 4px; margin-top: 10px; overflow: hidden;
         }
         .bar-fill { height: 100%; background: var(--school-blue); width: 0%; transition: width 0.3s; }
-        
         .badge-live {
             background: #ff4444; color: white;
             font-size: 0.6rem; padding: 2px 6px; border-radius: 4px;
@@ -143,62 +172,64 @@
             margin-bottom: 50px;
         }
 
-        .question-title {
-            font-size: 1.2rem; color: var(--school-blue);
-            margin-bottom: 20px; font-weight: 600;
-        }
-
+        .question-title { font-size: 1.2rem; color: var(--school-blue); margin-bottom: 20px; font-weight: 600; }
+        
         .choice-item {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
+            background: #f8f9fa; border: 2px solid #e9ecef;
             padding: 15px; border-radius: 10px;
-            margin-bottom: 12px; cursor: pointer;
-            transition: all 0.2s;
+            margin-bottom: 12px; cursor: pointer; transition: all 0.2s;
             font-family: 'Sarabun'; font-size: 1rem;
         }
-
         .choice-item:hover {
-            border-color: var(--school-blue);
-            background: var(--school-light-blue);
+            border-color: var(--school-blue); background: var(--school-light-blue);
             transform: translateX(5px);
         }
 
-        /* Animations */
-        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        
-        /* Mobile */
-        @media (max-width: 600px) {
-            .dashboard { justify-content: center; }
-            .result-card { 
-                width: 90%; height: auto; flex-direction: row; 
-                justify-content: space-between; padding: 10px 20px;
-                border-top: none; border-left: 6px solid var(--accent-yellow);
-            }
-            .emoji-big { font-size: 2rem; margin: 0; }
-            .text-status { font-size: 1rem; }
-            .badge-live { display: none; }
-            .bar-container { width: 50px; }
+        /* --- Footer (ส่วนเครดิตท้ายเว็บ) --- */
+        .footer-credit {
+            margin-top: auto;
+            width: 100%;
+            text-align: center;
+            padding: 20px 0;
+            background: rgba(255, 255, 255, 0.8);
+            border-top: 1px solid #ddd;
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.8;
+        }
+        .footer-credit strong {
+            color: var(--school-blue);
+            font-size: 1.1rem;
         }
 
+        /* Loader & Animations */
         .cam-loader {
             position: absolute; top:0; left:0; width:100%; height:100%;
             background: rgba(0,51,102,0.9); color: white;
             display: flex; justify-content: center; align-items: center;
             flex-direction: column; font-size: 0.9rem;
         }
+        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.2rem; }
+            .dashboard { justify-content: center; }
+            .result-card { width: 90%; height: auto; flex-direction: row; justify-content: space-between; padding: 10px 20px; border-top: none; border-left: 6px solid var(--accent-yellow); }
+            .emoji-big { font-size: 2rem; margin: 0; }
+            .badge-live { display: none; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="bg-animation-container" id="bg-anim">
-        </div>
+    <div class="bg-animation-container" id="bg-anim"></div>
 
     <div class="header-bar">
-        <div style="display: inline-block;">
-            <img src="https://img2.pic.in.th/logo-253x300-1.png" alt="Logo">
-            <div class="header-title">
-                <h1>😁ระบบ ai เช็คความสุข & แบบทดสอบก่อนเรียน💻</h1>
-                <span>ของนักเรียนโรงเรียนปราจิณราษฎรอำรุง</span>
+        <div class="header-content">
+            <h1>😁 ระบบ AI เช็คความสุข & เตรียมพร้อมก่อนเรียน 💻</h1>
+            <div class="sub-header">ของนักเรียนโรงเรียนปราจิณราษฎรอำรุง</div>
+            <div class="teacher-badge">
+                ครูผู้สอน : นายสรวิศิษฐ์ ศิริวรโสภณ (ครูบิ๊กกี้)
             </div>
         </div>
     </div>
@@ -240,26 +271,26 @@
         </button>
     </div>
 
+    <div class="footer-credit">
+        ❤️ Create By <strong>BiGgy Teacher ❤️</strong> @2026 ❤️ <br>
+        ❤️ พัฒนาเพื่อการเรียนรู้และสร้างรอยยิ้มในห้องเรียน ❤️
+    </div>
+
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
     <script>
         // --- 1. Background Animation Script ---
         function createFloatingEmojis() {
             const container = document.getElementById('bg-anim');
-            const emojis = ['✏️', '📚', '💻', '📐', '🖥️', '🎒', '🧠'];
-            const count = 15; // จำนวนไอคอนที่จะลอย
-
-            for (let i = 0; i < count; i++) {
+            const emojis = ['✏️', '📚', '💻', '📐', '🖥️', '🎒', '🧠', '🏫', '💡'];
+            for (let i = 0; i < 15; i++) {
                 const el = document.createElement('div');
                 el.classList.add('floating-emoji');
                 el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-                
-                // Random Position & Speed
                 el.style.left = Math.random() * 100 + '%';
-                el.style.animationDuration = (Math.random() * 10 + 10) + 's'; // 10-20 วินาที
+                el.style.animationDuration = (Math.random() * 10 + 10) + 's';
                 el.style.animationDelay = (Math.random() * 10) + 's';
-                el.style.fontSize = (Math.random() * 2 + 1) + 'rem'; // ขนาดไม่เท่ากัน
-
+                el.style.fontSize = (Math.random() * 2 + 1) + 'rem';
                 container.appendChild(el);
             }
         }
@@ -275,7 +306,7 @@
         let scoreA = 0, scoreB = 0;
 
         window.onload = function() {
-            createFloatingEmojis(); // เริ่ม Animation พื้นหลัง
+            createFloatingEmojis();
             renderQuiz();
             startAI();
         };
@@ -286,14 +317,11 @@
                 const div = document.createElement('div');
                 div.style.display = index === 0 ? 'block' : 'none';
                 div.id = `q-${index}`;
-                div.className = 'fade-in';
                 div.innerHTML = `
                     <div class="question-title">${item.q}</div>
                     <div class="choice-item" onclick="nextQ('a', ${index})">ก. ${item.a}</div>
                     <div class="choice-item" onclick="nextQ('b', ${index})">ข. ${item.b}</div>
-                    <div style="text-align:right; font-size:0.8rem; color:#aaa; margin-top:15px;">
-                        ข้อ ${index+1} จาก ${quizData.length}
-                    </div>
+                    <div style="text-align:right; font-size:0.8rem; color:#aaa; margin-top:15px;">ข้อ ${index+1}/${quizData.length}</div>
                 `;
                 wrapper.appendChild(div);
             });
@@ -305,8 +333,6 @@
             if (idx + 1 < quizData.length) {
                 const nextDiv = document.getElementById(`q-${idx+1}`);
                 nextDiv.style.display = 'block';
-                // Animation เล็กน้อย
-                nextDiv.animate([{opacity:0, transform:'translateY(20px)'}, {opacity:1, transform:'translateY(0)'}], {duration:400});
             } else {
                 showFinalResult();
             }
@@ -353,7 +379,6 @@
                         const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
                         const ctx = canvas.getContext('2d');
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
                         if (detections.length > 0) {
                             const ex = detections[0].expressions;
                             const sorted = Object.keys(ex).sort((a, b) => ex[b] - ex[a]);
@@ -375,14 +400,11 @@
                 surprised: {t:"ว้าว!", i:"😲", c:"#ff9800"}
             };
             const d = ui[emotion] || ui.neutral;
-            
             document.getElementById('emoji-display').innerText = d.i;
             document.getElementById('emotion-text').innerText = d.t;
             document.getElementById('emotion-text').style.color = d.c;
-            
-            const bar = document.getElementById('conf-level');
-            bar.style.width = Math.round(score*100) + '%';
-            bar.style.backgroundColor = d.c;
+            document.getElementById('conf-level').style.width = Math.round(score*100) + '%';
+            document.getElementById('conf-level').style.backgroundColor = d.c;
         }
     </script>
 </body>
